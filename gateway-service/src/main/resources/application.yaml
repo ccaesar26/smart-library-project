@@ -1,3 +1,47 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: gateway-service
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            # Ruta pentru Cărți
+            - id: library-route
+              uri: lb://LIBRARY-SERVICE
+              predicates:
+                - Path=/api/books/**
+
+            # Ruta pentru AI
+            - id: ai-route
+              uri: lb://AI-SERVICE
+              predicates:
+                - Path=/api/ai/**
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "http://localhost:9090" # Portul viitorului frontend
+                allowedMethods:
+                  - GET
+                  - POST
+                allowedHeaders: "*"
+                allowCredentials: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+# Configurare Actuator (pentru debugging)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
