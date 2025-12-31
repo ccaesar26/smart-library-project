@@ -2,6 +2,7 @@ package ro.unitbv.tpd.gateway_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -20,6 +21,7 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // Dezactivăm CSRF pentru simplitate în teste API
                 .authorizeExchange(exchanges -> exchanges
                         // Reguli de Autorizare (Cine ce are voie)
+                        .pathMatchers(HttpMethod.OPTIONS).permitAll()
                         .pathMatchers("/api/books/**").hasAnyRole("USER", "ADMIN") // Oricine poate vedea cărțile
                         .pathMatchers("/api/ai/chat/**").hasRole("USER")           // Chat-ul e pentru Useri
                         .pathMatchers("/api/ai/ingest/**").hasRole("ADMIN")        // Doar Adminul adaugă cărți în AI
