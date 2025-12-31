@@ -2,6 +2,7 @@ package ro.unitbv.tpd.library_service.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ro.unitbv.tpd.library_service.client.AiClient;
 import ro.unitbv.tpd.library_service.dto.BookRequest;
 import ro.unitbv.tpd.library_service.model.Book;
 import ro.unitbv.tpd.library_service.repository.BookRepository;
@@ -13,6 +14,7 @@ import java.util.List;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final AiClient aiClient;
 
     public Book saveBook(BookRequest request) {
         // Verificare Business Logic (bună pentru teste unitare)
@@ -31,7 +33,21 @@ public class BookService {
                 .genre(request.getGenre())
                 .build();
 
-        return bookRepository.save(book);
+        var savedBook = bookRepository.save(book);
+
+        // Apel asincron sau 'best effort' către AI
+        try {
+            aiClient.ingestBook(new AiClient.BookIngestDTO(
+                    savedBook.getId(),
+                    savedBook.getTitle(),
+                    savedBook.getSummary()
+            ));
+        } catch (Exception e) {
+            // Nu vrem să eșueze salvarea în baza de date dacă AI-ul e jos
+            System.err.println("Could not index book for AI: " + e.getMessage());
+        }
+
+        return savedBook;
     }
 
     public List<Book> getAllBooks() {
