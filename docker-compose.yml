@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  # 1. Baza de date relațională (pentru Library Service)
+  postgres-db:
+    image: postgres:15
+    container_name: library_postgres
+    environment:
+      POSTGRES_DB: library_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Baza de date vectorială (pentru AI Service - o pregătim de acum)
+  chroma-db:
+    image: chromadb/chroma:latest
+    container_name: library_chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+
+volumes:
+  postgres_data:
+  chroma_data:
