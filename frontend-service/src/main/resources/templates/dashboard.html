@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Library</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<!-- Navbar -->
+<nav class="bg-blue-600 text-white p-4 shadow-lg">
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-2xl font-bold"><i class="fas fa-book-reader mr-2"></i>Smart Library</h1>
+        <div>
+            <a href="/" class="mr-4 hover:text-gray-200 font-semibold">Cărți</a>
+            <a href="/chat" class="hover:text-gray-200 font-semibold">AI Assistant</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto p-6">
+    <!-- Header + Add Button -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-gray-800">Biblioteca Mea</h2>
+        <button onclick="document.getElementById('addModal').classList.remove('hidden')"
+                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition">
+            <i class="fas fa-plus mr-2"></i>Adaugă Carte
+        </button>
+    </div>
+
+    <!-- Grid Cărți (Responsive: 1 col pe mobil, 2 pe tabletă, 3 pe desktop) -->
+    <div id="books-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Aici se vor încărca cărțile prin JS -->
+        <p class="text-gray-500 col-span-full text-center">Se încarcă datele...</p>
+    </div>
+</div>
+
+<!-- Modal Adăugare Carte -->
+<div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+    <div class="bg-white p-6 rounded-lg w-96 shadow-2xl">
+        <h3 class="text-xl font-bold mb-4">Carte Nouă</h3>
+        <input id="title" type="text" placeholder="Titlu" class="w-full border p-2 mb-2 rounded">
+        <input id="author" type="text" placeholder="Autor" class="w-full border p-2 mb-2 rounded">
+        <input id="isbn" type="text" placeholder="ISBN" class="w-full border p-2 mb-2 rounded">
+        <input id="year" type="number" placeholder="An" class="w-full border p-2 mb-2 rounded">
+        <input id="genre" type="text" placeholder="Gen" class="w-full border p-2 mb-2 rounded">
+        <textarea id="summary" placeholder="Rezumat (pentru AI)" class="w-full border p-2 mb-4 rounded h-24"></textarea>
+
+        <div class="flex justify-end gap-2">
+            <button onclick="document.getElementById('addModal').classList.add('hidden')" class="text-gray-500 px-4 py-2">Anulează</button>
+            <button onclick="addBook()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Salvează</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const GATEWAY_URL = 'http://localhost:8080/api/books';
+    // Basic Auth Credentials (hardcoded pentru demo UI, în realitate se face login page)
+    const AUTH_HEADER = 'Basic ' + btoa('admin:admin');
+
+    // 1. Fetch Books
+    async function loadBooks() {
+        try {
+            const response = await fetch(GATEWAY_URL, {
+                headers: { 'Authorization': AUTH_HEADER }
+            });
+            if (!response.ok) throw new Error("Auth failed");
+
+            const books = await response.json();
+            const grid = document.getElementById('books-grid');
+            grid.innerHTML = ''; // Curăță loader-ul
+
+            books.forEach(book => {
+                const card = `
+                    <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition duration-300">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">${book.title}</h3>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">${book.genre}</span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4"><i class="fas fa-user-edit mr-1"></i> ${book.author}</p>
+                        <p class="text-gray-700 text-sm line-clamp-3 mb-4">${book.summary}</p>
+                        <div class="flex justify-between items-center text-xs text-gray-500 border-t pt-4">
+                            <span><i class="fas fa-calendar mr-1"></i> ${book.publicationYear}</span>
+                            <span>ISBN: ${book.isbn}</span>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        } catch (e) {
+            alert("Eroare la încărcare sau Login necesar! Verifică consola.");
+        }
+    }
+
+    // 2. Add Book
+    async function addBook() {
+        const book = {
+            title: document.getElementById('title').value,
+            author: document.getElementById('author').value,
+            isbn: document.getElementById('isbn').value,
+            publicationYear: parseInt(document.getElementById('year').value),
+            genre: document.getElementById('genre').value,
+            summary: document.getElementById('summary').value,
+            pageCount: 200 // Default
+        };
+
+        const response = await fetch(GATEWAY_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': AUTH_HEADER,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(book)
+        });
+
+        if (response.ok) {
+            document.getElementById('addModal').classList.add('hidden');
+            loadBooks(); // Reîmprospătează lista
+            alert("Carte salvată și trimisă la AI!");
+        } else {
+            alert("Eroare la salvare!");
+        }
+    }
+
+    // Load on start
+    loadBooks();
+</script>
+
+</body>
+</html>

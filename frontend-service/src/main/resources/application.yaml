@@ -1,0 +1,13 @@
+server:
+  port: 9090 # Port separat pentru UI
+
+spring:
+  application:
+    name: frontend-service
+  thymeleaf:
+    cache: false # Util pentru dezvoltare (vezi modificările imediat)
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
