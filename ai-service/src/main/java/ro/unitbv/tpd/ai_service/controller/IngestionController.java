@@ -40,6 +40,6 @@ public class IngestionController {
             System.out.println("💾 VectorStore: Date salvate pe disk.");
         }
 
-        System.out.println("Book indexed in ChromaDB: " + book.title());
+        System.out.println("Book indexed in pgvector: " + book.title());
     }
 }

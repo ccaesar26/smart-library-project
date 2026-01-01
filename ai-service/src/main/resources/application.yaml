@@ -5,6 +5,12 @@ spring:
   application:
     name: ai-service
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/library_db
+    username: admin
+    password: password123
+    driver-class-name: org.postgresql.Driver
+
   ai:
     google:
       genai:
@@ -19,13 +25,14 @@ spring:
               model: text-embedding-004
           api-key: ${GOOGLE_API_KEY}
           project-id: ${GOOGLE_PROJECT_ID}
-#    vectorstore:
-#      chroma:
-#        client:
-#          host: http://localhost
-#          port: 8000
-#        initialize-schema: false
-#        collection-name: library_collection
+    # Configurare Vector Store (PgVector)
+    vectorstore:
+      pgvector:
+        # Gemini folosește 768 dimensiuni (Default PGVector e 1536 pt OpenAI)
+        dimensions: 768
+        index-type: HNSW # Cel mai rapid tip de indexare
+        distance-type: COSINE_DISTANCE
+        initialize-schema: true # Va crea automat tabela vector_store
 
 eureka:
   client:

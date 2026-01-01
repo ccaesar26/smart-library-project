@@ -53,4 +53,30 @@ public class BookService {
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
     }
+
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + id));
+    }
+
+    public void deleteBook(Long id) {
+        if (!bookRepository.existsById(id)) {
+            throw new IllegalArgumentException("Book not found with id: " + id);
+        }
+        bookRepository.deleteById(id);
+    }
+
+    public Book updateBook(Long id, BookRequest request) {
+        Book existingBook = getBookById(id);
+
+        existingBook.setTitle(request.getTitle());
+        existingBook.setAuthor(request.getAuthor());
+        existingBook.setIsbn(request.getIsbn());
+        existingBook.setPublicationYear(request.getPublicationYear());
+        existingBook.setSummary(request.getSummary());
+        existingBook.setPageCount(request.getPageCount());
+        existingBook.setGenre(request.getGenre());
+
+        return bookRepository.save(existingBook);
+    }
 }
