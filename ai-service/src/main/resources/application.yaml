@@ -22,7 +22,8 @@ spring:
         embedding:
           text:
             options:
-              model: text-embedding-004
+              model: gemini-embedding-001
+              dimensions: 768
           api-key: ${GOOGLE_API_KEY}
           project-id: ${GOOGLE_PROJECT_ID}
     # Configurare Vector Store (PgVector)
@@ -34,7 +35,32 @@ spring:
         distance-type: COSINE_DISTANCE
         initialize-schema: true # Va crea automat tabela vector_store
 
+    mcp:
+      client:
+        enabled: true
+        name: brave-search
+        version: 1.0.0
+        stdio:
+          connections:
+            brave-search:
+              command: docker
+              args:
+                - run
+                - -i            # Interactiv (esențial pentru MCP)
+                - --rm          # Șterge containerul când se oprește Java
+                - -e
+                - BRAVE_API_KEY=${BRAVE_API_KEY} # Cheia ta
+                - -e
+                - BRAVE_MCP_TRANSPORT=stdio # Îi spunem explicit să folosească stdio
+                - mcp/brave-search # Imaginea găsită de tine
+
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    org.springframework.ai.chat.client.advisor: DEBUG
